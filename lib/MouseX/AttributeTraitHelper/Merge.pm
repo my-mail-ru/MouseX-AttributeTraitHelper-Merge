@@ -1,11 +1,17 @@
 package MouseX::AttributeTraitHelper::Merge;
 use Mouse::Role;
 
+has TRAIT_MAPPING => (
+    is => 'rw',
+    isa => 'HashRef[ClassName]',
+    default => sub {return {}},
+);
+
 around add_attribute => sub {
     my ($orig, $self) = (shift, shift);
 
     if(Scalar::Util::blessed($_[0])){
-        $self->$orig($_[0]);
+        return $self->$orig($_[0]);
     }
     else{
         my $name = shift;
@@ -17,7 +23,18 @@ around add_attribute => sub {
         my $traits = delete $args{traits};
         my $name_merged_trait = join "::" , 'MouseX::AttributeTraitHelper::Merge' , @$traits;
         my $meta = Mouse::Role->init_meta(for_class => $name_merged_trait);
+        $meta->add_around_method_modifier('does' => sub {
+            my ($orig_meta, $self_meta, $role) = @_;
+            if ($self->TRAIT_MAPPING->{$role}){
+                return 1;
+            }
+            else {
+                return $self->$orig($name)
+            }
+        });
         for my $trait (@$traits) {
+            $self->TRAIT_MAPPING->{$trait} = $name_merged_trait;
+            Mouse::Util::load_class($trait);
             for my $trait_attr_name ($trait->meta->get_attribute_list()) {
                 my $trait_attr = $trait->meta->get_attribute($trait_attr_name);
                 $trait_attr_name =~ s/^\+//;
