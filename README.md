@@ -29,7 +29,7 @@ Use '+' before role attribute was not supported.
 
 Solution:
 
-```
+```perl
 package ClassWithTrait;
 use Mouse -traits => 'MouseX::AttributeTraitHelper::Merge';
 
