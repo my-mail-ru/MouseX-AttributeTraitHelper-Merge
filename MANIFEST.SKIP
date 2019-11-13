@@ -22,6 +22,7 @@
 # Avoid Module::Build generated and utility files.
 \bBuild$
 \b_build/
+\blocal/
  
 # Avoid temp and backup files.
 ~$

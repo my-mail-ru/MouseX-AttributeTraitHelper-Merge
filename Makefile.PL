@@ -21,12 +21,15 @@ my %WriteMakefileArgs = (
         "Mouse" => "2.5.9",
     },
     "VERSION" => "0.9",
-    resources => {
-        repository => {
-            type => 'git',
-            url => 'git@gitlab.corp.mail.ru:mydev/mousex-attributetraithelper.git',
-            web => 'https://gitlab.corp.mail.ru/mydev/mousex-attributetraithelper',
-        }
+    META_MERGE => {
+        "meta-spec" => { version => 2 },
+        resources => {
+            repository => {
+                type => 'git',
+                url => 'git@gitlab.corp.mail.ru:mydev/mousex-attributetraithelper.git',
+                web => 'https://gitlab.corp.mail.ru/mydev/mousex-attributetraithelper',
+            }
+        },
     },
     "test" => {
         "TESTS" => "t/*.t",
