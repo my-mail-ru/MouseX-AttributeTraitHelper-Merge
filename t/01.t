@@ -23,6 +23,16 @@ has attrib => (
 no Mouse;
 __PACKAGE__->meta->make_immutable();
 
+package ClassWithOutTrait;
+use Mouse -traits => 'MouseX::AttributeTraitHelper::Merge';
+
+has attrib => (
+    is => 'rw',
+    isa => 'Int',
+);
+no Mouse;
+__PACKAGE__->meta->make_immutable();
+
 package MyRole::Trait;
 use Mouse::Role;
 use Mouse::Util;
@@ -60,6 +70,7 @@ __PACKAGE__->meta->make_immutable();
 package main;
 use Test::More;
 ok(ClassWithTrait->meta->get_attribute('attrib')->{allow} eq 'qwerty', 'Merged');
+ok(!exists(ClassWithOutTrait->meta->get_attribute('attrib')->{allow}), 'ClassWithOutTrait');
 
 my $name = 'MyResult';
 my $rolemeta = MyRoleWithOutHelper->initialize("${name}::Role");
