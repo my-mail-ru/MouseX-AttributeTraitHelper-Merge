@@ -66,7 +66,7 @@ __END__
 
 =head1 NAME
 
-MouseX::AttributeTraitHelper::Merge - Extend your attribute traits interface for Mouse
+MouseX::AttributeTraitHelper::Merge - Extend your attribute traits interface for L<Mouse>
 
 =head1 VERSION
 
