@@ -111,7 +111,7 @@ You have two traits:
 Both add fields to attribute with same name. In this case L<Mouse> throw the exception:
 "We have encountered an attribute conflict with 'allow' during composition. This is fatal error and cannot be disambiguated."
 
-Use '+' before role attribute was not supported.
+Usage of a '+' before role attribute was not supported.
 
 Solution:
 
