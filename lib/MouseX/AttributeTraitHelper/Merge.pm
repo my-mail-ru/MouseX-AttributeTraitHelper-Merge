@@ -128,8 +128,14 @@ Solution:
     __PACKAGE__->meta->make_immutable();
 
 In this case Trait1 and Trait2 merged in MouseX::AttributeTraitHelper::Merge::Trait1::Trait2 and applied to atribute `attrib`.
+The last `Trait` in the list is the highest priority and rewrite attribute fields.
+
+In this case attribute `attrib` has field `allow` with type `Str` and dafault value `qwerty`.
+
 But method `does` still work correctly:
 `ClassWithTrait->meta->get_attribute('attrib')->does('Trait1')` or `ClassWithTrait->meta->get_attribute('attrib')->does('Trait2')` returns true
+
+The last may confuse the developer because `Trait1` exports the `allow` field of type `Int`, but ultimately `allow` is of type `Str`
 
 =head1 DEPENDENCIES
 
@@ -153,8 +159,7 @@ Nikolay Shulyakovskiy (nikolas) E<lt>nikolas(at)cpan.orgE<gt>
 
 =head1 LICENSE AND COPYRIGHT
  
-Copyright (c) 2019, Nikolay Shulyakovskiy (nikolas), mostly based on Moose, which is (c)
-Infinity Interactive, Inc (L<http://www.iinteractive.com>).
+Copyright (c) 2019, Nikolay Shulyakovskiy (nikolas)
  
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. See L<perlartistic> for details.
