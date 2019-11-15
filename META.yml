@@ -6,13 +6,15 @@ build_requires:
   ExtUtils::MakeMaker: '0'
   Mouse: v2.5.9
   Test::More: '0.88'
+configure_requires:
+  ExtUtils::MakeMaker: '0'
 dynamic_config: 1
-generated_by: 'ExtUtils::MakeMaker version 6.68, CPAN::Meta::Converter version 2.150001'
+generated_by: 'ExtUtils::MakeMaker version 7.38, CPAN::Meta::Converter version 2.150010'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: '1.4'
-name: MouseX-AttributeTraitHelper
+name: MouseX-AttributeTraitHelper-Merge
 no_index:
   directory:
     - t
@@ -20,5 +22,6 @@ no_index:
 requires:
   perl: '5.010001'
 resources:
-  repository: https://gitlab.corp.mail.ru/mydev/mousex-attributetraithelper
+  repository: https://github.com/my-mail-ru/MouseX-AttributeTraitHelper-Merge
 version: '0.9'
+x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
