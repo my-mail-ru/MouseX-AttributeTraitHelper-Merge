@@ -12,7 +12,7 @@ my %WriteMakefileArgs = (
     "CONFIGURE_REQUIRES" => {
         "ExtUtils::MakeMaker" => 0
     },
-    "DISTNAME" => "MouseX-AttributeTraitHelper",
+    "DISTNAME" => "MouseX-AttributeTraitHelper-Merge",
     "LICENSE" => "perl",
     "MIN_PERL_VERSION" => "5.010001",
     "NAME" => "MouseX::AttributeTraitHelper::Merge",
@@ -26,8 +26,8 @@ my %WriteMakefileArgs = (
         resources => {
             repository => {
                 type => 'git',
-                url => 'git@gitlab.corp.mail.ru:mydev/mousex-attributetraithelper.git',
-                web => 'https://gitlab.corp.mail.ru/mydev/mousex-attributetraithelper',
+                url => 'git@github.com:my-mail-ru/MouseX-AttributeTraitHelper-Merge.git',
+                web => 'https://github.com/my-mail-ru/MouseX-AttributeTraitHelper-Merge',
             }
         },
     },
