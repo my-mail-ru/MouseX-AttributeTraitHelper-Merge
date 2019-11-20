@@ -8,18 +8,24 @@ has TRAIT_MAPPING => (
     default => sub {return {}},
 );
 
+has TRAIT_CLONES_MAPPING => (
+    is => 'ro',
+    isa => 'HashRef[ClassName]',
+    default => sub {return {}},
+);
+
 around add_attribute => sub {
     my ($orig, $self) = (shift, shift);
 
     return $self->$orig($_[0]) if Scalar::Util::blessed($_[0]);
-    
+
     my $name = shift;
-    my %args = (@_ == 1) ? %{$_[0]} : @_;
+    my $args = (@_ == 1) ? $_[0] : +{ @_ };
 
     defined($name)
         or $self->throw_error('You must provide a name for the attribute');
 
-    my $traits = delete $args{traits};
+    my $traits = delete $args->{traits};
     if ($traits) {
         my $role_name;
         if (@$traits == 1) {
@@ -27,6 +33,7 @@ around add_attribute => sub {
         }
         else {
             $role_name = join "::" , 'MouseX::AttributeTraitHelper::Merge' , @$traits;
+            $self->TRAIT_MAPPING->{$_} = $role_name for @$traits;
             if (!Mouse::Util::is_class_loaded($role_name)) {
                 my $meta = Mouse::Role->init_meta(for_class => $role_name);
                 $meta->add_around_method_modifier('does' => sub {
@@ -35,12 +42,26 @@ around add_attribute => sub {
                         return 1;
                     }
                     else {
-                        return $self->$orig($name)
+                        return $self_meta->$orig_meta($role)
                     }
                 });
+                my @trait_clones = ();
                 for my $trait (@$traits) {
-                    $self->TRAIT_MAPPING->{$trait} = $role_name;
                     Mouse::Util::load_class($trait);
+                    my $trait_clone_name = join "::" , 'MouseX::AttributeTraitHelper::Merge::CLONE', $trait;
+                    my $trait_clone_meta = $self->TRAIT_CLONES_MAPPING->{$trait_clone_name};
+                    unless($trait_clone_meta) {
+                        $trait_clone_meta = Mouse::Role->init_meta(for_class => $trait_clone_name);
+                        $trait->meta->apply($trait_clone_meta);
+                        for my $trait_attr_name ($trait->meta->get_attribute_list()) {
+                            $trait_clone_meta->remove_attribute($trait_attr_name);
+                        }
+                        $self->TRAIT_CLONES_MAPPING->{$trait_clone_name} = $trait_clone_meta;
+                    }
+                    push @trait_clones, $trait_clone_meta;
+                }
+                Mouse::Util::apply_all_roles($meta, @trait_clones);
+                for my $trait (@$traits) {
                     for my $trait_attr_name ($trait->meta->get_attribute_list()) {
                         my $trait_attr = $trait->meta->get_attribute($trait_attr_name);
                         $trait_attr_name =~ s/^\+//;
@@ -49,15 +70,15 @@ around add_attribute => sub {
                             @$exist_trait_attr{keys %$trait_attr} = values %$trait_attr;
                         }
                         else {
-                            $meta->add_attribute($trait_attr_name => {is => 'ro', %$trait_attr});
+                            $meta->add_attribute($trait_attr_name => (is => 'ro', %$trait_attr));
                         }
                     }
                 }
             }
         }
-        $args{traits} = [$role_name];
+        $args->{traits} = [$role_name];
     }
-    return $self->$orig($name, %args);
+    return $self->$orig($name, @_ == 1 ? $args : %$args);
 };
 
 no Mouse::Role;
@@ -76,13 +97,13 @@ This document describes MouseX::AttributeTraitHelper::Merge version 0.90.
 
     package ClassWithTrait;
     use Mouse -traits => 'MouseX::AttributeTraitHelper::Merge';
-    
+
     has attrib => (
         is => 'rw',
         isa => 'Int',
         traits => ['Trait1', 'Trait2'],
     );
-    
+
     no Mouse;
     __PACKAGE__->meta->make_immutable();
 
@@ -96,16 +117,16 @@ You have two traits:
 
     package Trait1;
     use Mouse::Role;
-    
+
     has 'allow' => (isa => 'Int', default => 123);
-    
+
     no Mouse::Role;
-    
+
     package Trait2;
     use Mouse::Role;
-    
+
     has 'allow' => (isa => 'Str', default => 'qwerty');
-    
+
     no Mouse::Role;
 
 Both add fields to attribute with same name. In this case L<Mouse> throw the exception:
@@ -117,13 +138,13 @@ Solution:
 
     package ClassWithTrait;
     use Mouse -traits => 'MouseX::AttributeTraitHelper::Merge';
-    
+
     has attrib => (
         is => 'rw',
         isa => 'Int',
         traits => ['Trait1', 'Trait2'],
     );
-    
+
     no Mouse;
     __PACKAGE__->meta->make_immutable();
 
@@ -155,14 +176,14 @@ L<Mouse::Meta::Class>
 
 =head1 AUTHORS
 
-Nikolay Shulyakovskiy (nikolas) E<lt>nikolas(at)cpan.orgE<gt> 
+Nikolay Shulyakovskiy (nikolas) E<lt>nikolas(at)cpan.orgE<gt>
 
 =head1 LICENSE AND COPYRIGHT
- 
+
 Copyright (c) 2019, Nikolay Shulyakovskiy (nikolas)
- 
+
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. See L<perlartistic> for details.
- 
+
 =cut
- 
+
