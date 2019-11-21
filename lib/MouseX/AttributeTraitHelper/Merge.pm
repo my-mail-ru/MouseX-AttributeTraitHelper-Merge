@@ -8,12 +8,6 @@ has TRAIT_MAPPING => (
     default => sub {return {}},
 );
 
-has TRAIT_CLONES_MAPPING => (
-    is => 'ro',
-    isa => 'HashRef[ClassName]',
-    default => sub {return {}},
-);
-
 around add_attribute => sub {
     my ($orig, $self) = (shift, shift);
 
@@ -45,22 +39,20 @@ around add_attribute => sub {
                         return $self_meta->$orig_meta($role)
                     }
                 });
-                my @trait_clones = ();
+                my @trait_clones_meta = ();
                 for my $trait (@$traits) {
                     Mouse::Util::load_class($trait);
-                    my $trait_clone_name = join "::" , 'MouseX::AttributeTraitHelper::Merge::CLONE', $trait;
-                    my $trait_clone_meta = $self->TRAIT_CLONES_MAPPING->{$trait_clone_name};
-                    unless($trait_clone_meta) {
-                        $trait_clone_meta = Mouse::Role->init_meta(for_class => $trait_clone_name);
+                    my $trait_clone = join "::" , 'MouseX::AttributeTraitHelper::Merge::CLONE', $trait;
+                    if(!Mouse::Util::is_class_loaded($trait_clone)) {
+                        my $trait_clone_meta = Mouse::Role->init_meta(for_class => $trait_clone);
                         $trait->meta->apply($trait_clone_meta);
                         for my $trait_attr_name ($trait->meta->get_attribute_list()) {
                             $trait_clone_meta->remove_attribute($trait_attr_name);
                         }
-                        $self->TRAIT_CLONES_MAPPING->{$trait_clone_name} = $trait_clone_meta;
                     }
-                    push @trait_clones, $trait_clone_meta;
+                    push @trait_clones_meta, $trait_clone->meta;
                 }
-                Mouse::Util::apply_all_roles($meta, @trait_clones);
+                Mouse::Util::apply_all_roles($meta, @trait_clones_meta);
                 for my $trait (@$traits) {
                     for my $trait_attr_name ($trait->meta->get_attribute_list()) {
                         my $trait_attr = $trait->meta->get_attribute($trait_attr_name);
@@ -109,7 +101,7 @@ This document describes MouseX::AttributeTraitHelper::Merge version 0.90.
 
 =head1 DESCRIPTION
 
-If you needs to use many traits for attribute with overlapped field name this solution for you!
+If you need to use many traits for attribute with overlapped field name this solution for you!
 
 This role replace all trait for attribute by one new trait. For example:
 
@@ -132,7 +124,7 @@ You have two traits:
 Both add fields to attribute with same name. In this case L<Mouse> throw the exception:
 "We have encountered an attribute conflict with 'allow' during composition. This is fatal error and cannot be disambiguated."
 
-Usage of a '+' before role attribute was not supported.
+Usage of a '+' before role attribute is not supported.
 
 Solution:
 
@@ -148,10 +140,10 @@ Solution:
     no Mouse;
     __PACKAGE__->meta->make_immutable();
 
-In this case Trait1 and Trait2 merged in MouseX::AttributeTraitHelper::Merge::Trait1::Trait2 and applied to atribute `attrib`.
+In this case Trait1 and Trait2 merged in MouseX::AttributeTraitHelper::Merge::Trait1::Trait2 and applied to attribute `attrib`.
 The last `Trait` in the list is the highest priority and rewrite attribute fields.
 
-In this case attribute `attrib` has field `allow` with type `Str` and dafault value `qwerty`.
+In this case attribute `attrib` has field `allow` with type `Str` and default value `qwerty`.
 
 But method `does` still work correctly:
 `ClassWithTrait->meta->get_attribute('attrib')->does('Trait1')` or `ClassWithTrait->meta->get_attribute('attrib')->does('Trait2')` returns true
