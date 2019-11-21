@@ -20,7 +20,7 @@ my %WriteMakefileArgs = (
         "Test::More" => "0.88",
         "Mouse" => "2.5.9",
     },
-    "VERSION" => "0.9",
+    "VERSION" => "0.99",
     META_MERGE => {
         "meta-spec" => { version => 2 },
         resources => {

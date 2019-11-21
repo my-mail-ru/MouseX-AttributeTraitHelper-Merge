@@ -2,6 +2,8 @@ package MouseX::AttributeTraitHelper::Merge;
 use Mouse::Role;
 use Mouse::Util;
 
+our $VERSION = '0.99';
+
 has TRAIT_MAPPING => (
     is => 'ro',
     isa => 'HashRef[ClassName]',
